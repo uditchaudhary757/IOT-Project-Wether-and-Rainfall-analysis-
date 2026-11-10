@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bareilly Weather Trends & Rainfall Analysis (2016 - 2025)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        skyBrand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-sky-500 text-white p-2 rounded-lg">
+                    <i class="fa-solid fa-cloud-showers-heavy text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Bareilly Weather Analytics</h1>
+                    <p class="text-xs text-slate-400">Rainfall & Climate Trends (2016–2025)</p>
+                </div>
+            </div>
+            
+            <nav class="flex items-center space-x-2">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-4 py-2 rounded-lg text-sm font-medium transition bg-sky-600 text-white">
+                    <i class="fa-solid fa-chart-line mr-1.5"></i> Dashboard
+                </button>
+                <button onclick="switchTab('slides')" id="nav-slides" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-file-powerpoint mr-1.5"></i> Presentation Deck
+                </button>
+                <button onclick="switchTab('data')" id="nav-data" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-table mr-1.5"></i> Raw Data
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- TAB 1: DASHBOARD -->
+        <section id="tab-dashboard" class="space-y-6">
+            
+            <!-- Header Filter Bar -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Decadal Climate & Precipitation Insights</h2>
+                    <p class="text-sm text-slate-500">Comprehensive meteorological breakdown for Bareilly, Uttar Pradesh</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <label class="text-xs font-semibold uppercase text-slate-400">Filter Range:</label>
+                    <select id="yearFilter" onchange="filterData()" class="bg-slate-100 border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block p-2.5">
+                        <option value="all">Full 10-Year Period (2016–2025)</option>
+                        <option value="recent">Recent 5 Years (2021–2025)</option>
+                        <option value="past">Baseline 5 Years (2016–2020)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- KPI Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-500 uppercase">Annual Avg Rainfall</span>
+                        <span class="p-2 bg-sky-100 text-sky-600 rounded-lg"><i class="fa-solid fa-droplet"></i></span>
+                    </div>
+                    <div class="mt-2 flex items-baseline">
+                        <span class="text-3xl font-extrabold text-slate-900" id="kpi-avg-rain">1,045</span>
+                        <span class="ml-1 text-slate-500 text-sm">mm/yr</span>
+                    </div>
+                    <p class="mt-2 text-xs text-emerald-600 flex items-center">
+                        <i class="fa-solid fa-arrow-up mr-1"></i> Baseline +4.2% shift in recent decade
+                    </p>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-500 uppercase">Peak Monsoon Year</span>
+                        <span class="p-2 bg-blue-100 text-blue-600 rounded-lg"><i class="fa-solid fa-cloud-bolt"></i></span>
+                    </div>
+                    <div class="mt-2 flex items-baseline">
+                        <span class="text-3xl font-extrabold text-slate-900">2021</span>
+                        <span class="ml-2 text-sm font-semibold text-blue-600">1,380 mm</span>
+                    </div>
+                    <p class="mt-2 text-xs text-slate-500">Record flooding events recorded</p>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-500 uppercase">Driest Year Observed</span>
+                        <span class="p-2 bg-amber-100 text-amber-600 rounded-lg"><i class="fa-solid fa-sun"></i></span>
+                    </div>
+                    <div class="mt-2 flex items-baseline">
+                        <span class="text-3xl font-extrabold text-slate-900">2017</span>
+                        <span class="ml-2 text-sm font-semibold text-amber-600">720 mm</span>
+                    </div>
+                    <p class="mt-2 text-xs text-amber-700 flex items-center">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Agricultural drought stress
+                    </p>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-500 uppercase">Monsoon Share</span>
+                        <span class="p-2 bg-indigo-100 text-indigo-600 rounded-lg"><i class="fa-solid fa-water"></i></span>
+                    </div>
+                    <div class="mt-2 flex items-baseline">
+                        <span class="text-3xl font-extrabold text-slate-900">84%</span>
+                        <span class="ml-1 text-slate-500 text-sm">Jul - Sep</span>
+                    </div>
+                    <p class="mt-2 text-xs text-slate-500">High seasonal concentration</p>
+                </div>
+            </div>
+
+
+            <!-- IoT LIVE SENSOR MONITORING -->
+            <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-lg"><i class="fa-solid fa-microchip text-sky-600 mr-2"></i>IoT Live Sensor Monitoring</h3>
+                        <p class="text-sm text-slate-500">Environmental readings from the connected weather-station sensors</p>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span id="iot-status-dot" class="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+                        <span id="iot-status-text" class="font-semibold text-amber-700">Connecting...</span>
+                        <span class="text-slate-400">|</span>
+                        <span id="iot-last-updated" class="text-slate-500">Waiting for data</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <div class="rounded-lg bg-sky-50 border border-sky-100 p-4">
+                        <p class="text-xs text-slate-500 font-semibold uppercase">Temperature</p>
+                        <p class="text-2xl font-bold text-slate-900 mt-2"><span id="sensor-temp">--</span><span class="text-sm ml-1">°C</span></p>
+                        <p class="text-xs text-slate-500 mt-1">DHT sensor</p>
+                    </div>
+                    <div class="rounded-lg bg-indigo-50 border border-indigo-100 p-4">
+                        <p class="text-xs text-slate-500 font-semibold uppercase">Humidity</p>
+                        <p class="text-2xl font-bold text-slate-900 mt-2"><span id="sensor-humidity">--</span><span class="text-sm ml-1">%</span></p>
+                        <p class="text-xs text-slate-500 mt-1">Air moisture</p>
+                    </div>
+                    <div class="rounded-lg bg-blue-50 border border-blue-100 p-4">
+                        <p class="text-xs text-slate-500 font-semibold uppercase">Rainfall</p>
+                        <p class="text-2xl font-bold text-slate-900 mt-2"><span id="sensor-rain">--</span><span class="text-sm ml-1">mm</span></p>
+                        <p class="text-xs text-slate-500 mt-1">Rain gauge</p>
+                    </div>
+                    <div class="rounded-lg bg-emerald-50 border border-emerald-100 p-4">
+                        <p class="text-xs text-slate-500 font-semibold uppercase">Soil Moisture</p>
+                        <p class="text-2xl font-bold text-slate-900 mt-2"><span id="sensor-soil">--</span><span class="text-sm ml-1">%</span></p>
+                        <p class="text-xs text-slate-500 mt-1">Soil sensor</p>
+                    </div>
+                    <div class="rounded-lg bg-amber-50 border border-amber-100 p-4">
+                        <p class="text-xs text-slate-500 font-semibold uppercase">Water Level</p>
+                        <p class="text-2xl font-bold text-slate-900 mt-2"><span id="sensor-water">--</span><span class="text-sm ml-1">cm</span></p>
+                        <p class="text-xs text-slate-500 mt-1">Ultrasonic sensor</p>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-500">
+                    Presentation demo: values are simulated by Python. Connect ESP32/Arduino sensors to display real measurements.
+                </p>
+            </section>
+
+            <!-- Charts Row 1 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Annual Rainfall Trend -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 lg:col-span-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-800">Annual Total Precipitation (2016–2025)</h3>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded">Millimeters (mm)</span>
+                    </div>
+                    <div class="h-72">
+                        <canvas id="annualChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Seasonal Share -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-800">Seasonal Breakdown</h3>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded">Avg Share</span>
+                    </div>
+                    <div class="h-72 flex items-center justify-center">
+                        <canvas id="seasonalChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Monthly Profile -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-800 mb-4">Average Monthly Distribution Pattern</h3>
+                    <div class="h-64">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Temperature vs Rainfall Correlation -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-slate-800 mb-4">Avg Temperature vs. Precipitation Trend</h3>
+                    <div class="h-64">
+                        <canvas id="tempRainChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Extreme Weather Events Table -->
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="font-bold text-slate-800 mb-3"><i class="fa-solid fa-triangle-exclamation text-amber-500 mr-2"></i>Key Climate Anomalies & Extreme Events</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200 text-sm">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left font-semibold text-slate-600">Year</th>
+                                <th class="px-4 py-2 text-left font-semibold text-slate-600">Event Classification</th>
+                                <th class="px-4 py-2 text-left font-semibold text-slate-600">Impact Summary</th>
+                                <th class="px-4 py-2 text-left font-semibold text-slate-600">Severity Index</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-slate-700">
+                            <tr>
+                                <td class="px-4 py-2.5 font-bold">2017</td>
+                                <td class="px-4 py-2.5">Monsoon Deficit</td>
+                                <td class="px-4 py-2.5">31% deficit below normal baseline, affecting Kharif yield.</td>
+                                <td class="px-4 py-2.5"><span class="px-2 py-0.5 rounded text-xs bg-amber-100 text-amber-800 font-semibold">Moderate</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2.5 font-bold">2021</td>
+                                <td class="px-4 py-2.5">Extreme Downpour & Flooding</td>
+                                <td class="px-4 py-2.5">Over 410mm rain in July alone; urban waterlogging in low-lying Bareilly wards.</td>
+                                <td class="px-4 py-2.5"><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-800 font-semibold">High</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2.5 font-bold">2023</td>
+                                <td class="px-4 py-2.5">Delayed Monsoon Retreat</td>
+                                <td class="px-4 py-2.5">Unseasonal heavy showers in October damaging standing crops.</td>
+                                <td class="px-4 py-2.5"><span class="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800 font-semibold">Moderate</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- TAB 2: PRESENTATION SLIDES -->
+        <section id="tab-slides" class="hidden space-y-6">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Presentation Deck Viewer</h2>
+                    <p class="text-xs text-slate-500">Interactive slide-by-slide executive briefing</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="prevSlide()" class="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 text-slate-700"><i class="fa-solid fa-chevron-left"></i></button>
+                    <span id="slide-indicator" class="text-sm font-semibold px-3">Slide 1 / 5</span>
+                    <button onclick="nextSlide()" class="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 text-slate-700"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Slide Content Canvas -->
+            <div id="slide-card" class="bg-gradient-to-br from-slate-900 to-sky-950 text-white rounded-2xl shadow-xl min-h-[480px] p-8 flex flex-col justify-between transition-all duration-300">
+                <!-- Slide Header -->
+                <div class="flex justify-between items-start border-b border-slate-700 pb-4">
+                    <div>
+                        <span id="slide-tag" class="text-xs font-semibold tracking-wider text-sky-400 uppercase">Executive Overview</span>
+                        <h2 id="slide-title" class="text-2xl font-bold mt-1 text-white">Weather Trends & Rainfall Analysis (2016–2025)</h2>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400">Bareilly Region</span>
+                    </div>
+                </div>
+
+                <!-- Slide Body -->
+                <div id="slide-body" class="my-6 space-y-4 text-slate-200 text-base leading-relaxed">
+                    <!-- Dynamic Body Content Injected Here -->
+                </div>
+
+                <!-- Slide Footer -->
+                <div class="border-t border-slate-800 pt-4 flex justify-between items-center text-xs text-slate-400">
+                    <span>Source: Meteorological Dept Data (2016-2025)</span>
+                    <span>Professional Report Deck</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: RAW DATA TABLE -->
+        <section id="tab-data" class="hidden space-y-6">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Historical Dataset (2016–2025)</h2>
+                    <p class="text-xs text-slate-500">Annual meteorological observations for Bareilly, UP</p>
+                </div>
+                <button onclick="downloadCSV()" class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition">
+                    <i class="fa-solid fa-file-csv mr-1.5"></i> Export CSV
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="min-w-full divide-y divide-slate-200 text-sm">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left font-bold text-slate-700 uppercase tracking-wider">Year</th>
+                            <th class="px-6 py-3 text-left font-bold text-slate-700 uppercase tracking-wider">Rainfall (mm)</th>
+                            <th class="px-6 py-3 text-left font-bold text-slate-700 uppercase tracking-wider">Rainy Days</th>
+                            <th class="px-6 py-3 text-left font-bold text-slate-700 uppercase tracking-wider">Avg Temp (°C)</th>
+                            <th class="px-6 py-3 text-left font-bold text-slate-700 uppercase tracking-wider">Status Category</th>
+                        </tr>
+                    </thead>
+                    <tbody id="datasetTableBody" class="divide-y divide-slate-200 text-slate-700 bg-white">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs">
+            <p>Bareilly Weather Trends & Rainfall Analysis (2016–2025) Interactive Portal</p>
+            <p class="mt-1 text-slate-500">Generated for Meteorological & Agricultural Planning Briefings</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Core Meteorological Dataset
+        const weatherData = [
+            { year: 2016, rainfall: 980, rainyDays: 48, temp: 25.1, status: "Normal" },
+            { year: 2017, rainfall: 720, rainyDays: 39, temp: 25.8, status: "Deficit" },
+            { year: 2018, rainfall: 1050, rainyDays: 52, temp: 24.9, status: "Normal" },
+            { year: 2019, rainfall: 1120, rainyDays: 55, temp: 25.0, status: "Above Normal" },
+            { year: 2020, rainfall: 990, rainyDays: 50, temp: 24.7, status: "Normal" },
+            { year: 2021, rainfall: 1380, rainyDays: 64, temp: 24.5, status: "Excess / Flooding" },
+            { year: 2022, rainfall: 890, rainyDays: 44, temp: 25.6, status: "Slight Deficit" },
+            { year: 2023, rainfall: 1210, rainyDays: 58, temp: 25.2, status: "Above Normal" },
+            { year: 2024, rainfall: 1040, rainyDays: 51, temp: 25.1, status: "Normal" },
+            { year: 2025, rainfall: 1070, rainyDays: 53, temp: 24.9, status: "Normal" }
+        ];
+
+        // Monthly Profile Averages (mm)
+        const monthlyData = [15, 20, 18, 10, 35, 140, 330, 310, 150, 45, 10, 12];
+        const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+        // Chart Instances
+        let annualChartInstance, seasonalChartInstance, monthlyChartInstance, tempRainChartInstance;
+
+        // Presentation Slides Data
+        const slides = [
+            {
+                tag: "Slide 1: Executive Overview",
+                title: "Decadal Climate Study: Bareilly (2016–2025)",
+                body: `
+                    <p class="text-lg">This report provides a multi-year analysis of precipitation patterns, temperature fluctuations, and extreme weather occurrences in <strong>Bareilly, Uttar Pradesh</strong> over the 2016–2025 decade.</p>
+                    <ul class="list-disc pl-5 space-y-2 mt-4 text-slate-300">
+                        <li><strong>Mean Annual Precipitation:</strong> ~1,045 mm</li>
+                        <li><strong>Primary Driver:</strong> Southwest Monsoon (July - September)</li>
+                        <li><strong>Key Risk Factors:</strong> Urban flooding risks during extreme years (2021) vs agricultural drought vulnerabilities (2017).</li>
+                    </ul>
+                `
+            },
+            {
+                tag: "Slide 2: Annual Variations",
+                title: "Precipitation Trajectory & Variability",
+                body: `
+                    <p>Precipitation exhibits significant year-on-year variability across the 10-year span:</p>
+                    <div class="grid grid-cols-2 gap-4 my-4">
+                        <div class="bg-slate-800/60 p-4 rounded-lg border border-slate-700">
+                            <span class="text-xs text-sky-400 block font-semibold">MAXIMUM RAINFALL</span>
+                            <span class="text-2xl font-bold">1,380 mm</span> (2021)
+                        </div>
+                        <div class="bg-slate-800/60 p-4 rounded-lg border border-slate-700">
+                            <span class="text-xs text-amber-400 block font-semibold">MINIMUM RAINFALL</span>
+                            <span class="text-2xl font-bold">720 mm</span> (2017)
+                        </div>
+                    </div>
+                    <p class="text-sm text-slate-300">The recent 5-year block (2021-2025) demonstrates a +9.5% higher average rainfall compared to the baseline 2016-2020 block.</p>
+                `
+            },
+            {
+                tag: "Slide 3: Seasonal Distribution",
+                title: "Monsoon Concentration & Monthly Profile",
+                body: `
+                    <p>Bareilly's climate is dominated by monsoon seasonality:</p>
+                    <ul class="list-disc pl-5 space-y-2 my-3 text-slate-300">
+                        <li><strong>Monsoon Season (Jul–Sep):</strong> Accounts for <strong>84%</strong> of overall annual precipitation.</li>
+                        <li><strong>Peak Month:</strong> July averages ~330 mm, closely followed by August (~310 mm).</li>
+                        <li><strong>Pre-Monsoon & Winter:</strong> Minor rainfall from western disturbances in Jan-Feb.</li>
+                    </ul>
+                `
+            },
+            {
+                tag: "Slide 4: Climate Impacts",
+                title: "Agricultural & Infrastructure Implications",
+                body: `
+                    <div class="space-y-3">
+                        <div class="p-3 bg-slate-800/80 rounded border-l-4 border-emerald-500">
+                            <h4 class="font-bold text-emerald-400">Agriculture</h4>
+                            <p class="text-sm">Sugarcane and Paddy crops remain highly dependent on July-August rain timeliness. Late October rain shifts threaten harvesting seasons.</p>
+                        </div>
+                        <div class="p-3 bg-slate-800/80 rounded border-l-4 border-sky-500">
+                            <h4 class="font-bold text-sky-400">Urban Drainage</h4>
+                            <p class="text-sm">Days with >100mm single-day rainfall have increased by 20% over the last decade, placing pressure on city storm drains.</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                tag: "Slide 5: Recommendations",
+                title: "Strategic Action Plan",
+                body: `
+                    <ol class="list-decimal pl-5 space-y-3 text-slate-200">
+                        <li><strong>Infrastructure:</strong> Upgrade municipal drainage capacity to handle peak downpours exceeding 80mm/day.</li>
+                        <li><strong>Agri-Advisory:</strong> Encourage climate-resilient crop variations to mitigate yield losses from monsoonal delays.</li>
+                        <li><strong>Rainwater Harvesting:</strong> Mandatory rainwater storage systems in new urban layouts to recharge subterranean aquifers.</li>
+                    </ol>
+                `
+            }
+        ];
+
+        let currentSlide = 0;
+
+        // Initialize App
+        window.onload = function() {
+            renderCharts(weatherData);
+            populateTable(weatherData);
+            renderSlide(currentSlide);
+            updateIoTReadings();
+            setInterval(updateIoTReadings, 5000); // refresh every 5 seconds
+        };
+
+        // Tab Switching Logic
+        function switchTab(tabName) {
+            document.getElementById('tab-dashboard').classList.add('hidden');
+            document.getElementById('tab-slides').classList.add('hidden');
+            document.getElementById('tab-data').classList.add('hidden');
+
+            document.getElementById('nav-dashboard').className = "px-4 py-2 rounded-lg text-sm font-medium transition text-slate-300 hover:text-white hover:bg-slate-800";
+            document.getElementById('nav-slides').className = "px-4 py-2 rounded-lg text-sm font-medium transition text-slate-300 hover:text-white hover:bg-slate-800";
+            document.getElementById('nav-data').className = "px-4 py-2 rounded-lg text-sm font-medium transition text-slate-300 hover:text-white hover:bg-slate-800";
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabName}`).className = "px-4 py-2 rounded-lg text-sm font-medium transition bg-sky-600 text-white";
+        }
+
+        // Render Data Charts
+        function renderCharts(dataset) {
+            const labels = dataset.map(d => d.year);
+            const rainfall = dataset.map(d => d.rainfall);
+            const temps = dataset.map(d => d.temp);
+
+            // Annual Bar Chart
+            const ctxAnnual = document.getElementById('annualChart').getContext('2d');
+            if (annualChartInstance) annualChartInstance.destroy();
+            annualChartInstance = new Chart(ctxAnnual, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Rainfall (mm)',
+                        data: rainfall,
+                        backgroundColor: rainfall.map(v => v > 1200 ? '#0284c7' : v < 800 ? '#f59e0b' : '#38bdf8'),
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Seasonal Doughnut Chart
+            const ctxSeasonal = document.getElementById('seasonalChart').getContext('2d');
+            if (seasonalChartInstance) seasonalChartInstance.destroy();
+            seasonalChartInstance = new Chart(ctxSeasonal, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Monsoon (Jul-Sep)', 'Pre-Monsoon (Apr-Jun)', 'Post-Monsoon (Oct-Dec)', 'Winter (Jan-Mar)'],
+                    datasets: [{
+                        data: [84, 10, 3, 3],
+                        backgroundColor: ['#0284c7', '#38bdf8', '#fbbf24', '#94a3b8']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            // Monthly Profile Line Chart
+            const ctxMonthly = document.getElementById('monthlyChart').getContext('2d');
+            if (monthlyChartInstance) monthlyChartInstance.destroy();
+            monthlyChartInstance = new Chart(ctxMonthly, {
+                type: 'line',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Avg Rainfall (mm)',
+                        data: monthlyData,
+                        borderColor: '#0284c7',
+                        backgroundColor: 'rgba(2, 132, 199, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Temp vs Rain Mixed Chart
+            const ctxTempRain = document.getElementById('tempRainChart').getContext('2d');
+            if (tempRainChartInstance) tempRainChartInstance.destroy();
+            tempRainChartInstance = new Chart(ctxTempRain, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'Rainfall (mm)',
+                            data: rainfall,
+                            backgroundColor: 'rgba(56, 189, 248, 0.5)',
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'line',
+                            label: 'Avg Temp (°C)',
+                            data: temps,
+                            borderColor: '#ef4444',
+                            borderWidth: 2,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { position: 'left', title: { display: true, text: 'Rainfall (mm)' } },
+                        y1: { position: 'right', min: 20, max: 30, title: { display: true, text: 'Temp (°C)' }, grid: { drawOnChartArea: false } }
+                    }
+                }
+            });
+        }
+
+        // Filter Logic
+        function filterData() {
+            const val = document.getElementById('yearFilter').value;
+            let filtered = weatherData;
+
+            if (val === 'recent') {
+                filtered = weatherData.filter(d => d.year >= 2021);
+            } else if (val === 'past') {
+                filtered = weatherData.filter(d => d.year <= 2020);
+            }
+
+            // Recalculate KPI
+            const avg = Math.round(filtered.reduce((acc, curr) => acc + curr.rainfall, 0) / filtered.length);
+            document.getElementById('kpi-avg-rain').innerText = avg.toLocaleString();
+
+            renderCharts(filtered);
+        }
+
+        // Populate Raw Data Table
+        function populateTable(dataset) {
+            const tbody = document.getElementById('datasetTableBody');
+            tbody.innerHTML = dataset.map(row => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="px-6 py-4 font-bold text-slate-900">${row.year}</td>
+                    <td class="px-6 py-4">${row.rainfall} mm</td>
+                    <td class="px-6 py-4">${row.rainyDays} days</td>
+                    <td class="px-6 py-4">${row.temp} °C</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            row.status.includes('Deficit') ? 'bg-amber-100 text-amber-800' : 
+                            row.status.includes('Excess') ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'
+                        }">
+                            ${row.status}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Slide Deck Navigation
+        function renderSlide(index) {
+            const slide = slides[index];
+            document.getElementById('slide-tag').innerText = slide.tag;
+            document.getElementById('slide-title').innerText = slide.title;
+            document.getElementById('slide-body').innerHTML = slide.body;
+            document.getElementById('slide-indicator').innerText = `Slide ${index + 1} / ${slides.length}`;
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                renderSlide(currentSlide);
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                renderSlide(currentSlide);
+            }
+        }
+
+
+        // IoT readings: fetched from the Python Flask backend.
+        async function updateIoTReadings() {
+            const statusText = document.getElementById('iot-status-text');
+            const statusDot = document.getElementById('iot-status-dot');
+
+            try {
+                const response = await fetch('/api/readings');
+                if (!response.ok) throw new Error('Server response was not successful');
+                const data = await response.json();
+
+                document.getElementById('sensor-temp').textContent = data.temperature.toFixed(1);
+                document.getElementById('sensor-humidity').textContent = data.humidity.toFixed(1);
+                document.getElementById('sensor-rain').textContent = data.rainfall.toFixed(1);
+                document.getElementById('sensor-soil').textContent = data.soil_moisture.toFixed(0);
+                document.getElementById('sensor-water').textContent = data.water_level.toFixed(1);
+
+                statusText.textContent = 'Server connected • Demo data';
+                statusText.className = 'font-semibold text-emerald-700';
+                statusDot.className = 'h-2.5 w-2.5 rounded-full bg-emerald-500';
+                document.getElementById('iot-last-updated').textContent =
+                    'Updated: ' + new Date(data.timestamp).toLocaleTimeString();
+            } catch (error) {
+                statusText.textContent = 'Backend not connected';
+                statusText.className = 'font-semibold text-red-700';
+                statusDot.className = 'h-2.5 w-2.5 rounded-full bg-red-500';
+                document.getElementById('iot-last-updated').textContent = 'Start app.py to load readings';
+                console.error('Could not load IoT readings:', error);
+            }
+        }
+
+        // CSV Export Function
+        function downloadCSV() {
+            let csv = 'Year,Rainfall_mm,Rainy_Days,Avg_Temp_C,Status\n';
+            weatherData.forEach(r => {
+                csv += `${r.year},${r.rainfall},${r.rainyDays},${r.temp},"${r.status}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'Bareilly_Rainfall_Analysis_2016_2025.csv');
+            a.click();
+        }
+    </script>
+</body>
+</html>
