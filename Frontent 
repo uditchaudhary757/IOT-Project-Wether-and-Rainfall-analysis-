@@ -1,0 +1,104 @@
+from datetime import datetime, timezone
+from pathlib import Path
+import random
+import sqlite3
+
+import pandas as pd
+from flask import Flask, jsonify, send_from_directory
+
+# Keep all project files in the same folder.
+BASE_DIR = Path(__file__).resolve().parent
+DB_FILE = BASE_DIR / "iot_readings.db"
+
+app = Flask(__name__)
+
+
+def init_database():
+    """Create the sensor-history table if it does not already exist."""
+    with sqlite3.connect(DB_FILE) as connection:
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS readings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT NOT NULL,
+                temperature REAL,
+                humidity REAL,
+                rainfall REAL,
+                soil_moisture REAL,
+                water_level REAL
+            )
+        """)
+
+
+def get_sensor_reading():
+    """
+    DEMO MODE:
+    These values are generated for the college presentation.
+    Replace this function with readings received from your ESP32/Arduino.
+    """
+    return {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "temperature": round(random.uniform(22, 38), 1),
+        "humidity": round(random.uniform(35, 90), 1),
+        "rainfall": round(random.uniform(0, 12), 1),
+        "soil_moisture": round(random.uniform(20, 85), 1),
+        "water_level": round(random.uniform(5, 90), 1)
+    }
+
+
+def save_reading(reading):
+    """Save the latest sensor values in the local SQLite database."""
+    with sqlite3.connect(DB_FILE) as connection:
+        connection.execute("""
+            INSERT INTO readings
+            (timestamp, temperature, humidity, rainfall, soil_moisture, water_level)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            reading["timestamp"],
+            reading["temperature"],
+            reading["humidity"],
+            reading["rainfall"],
+            reading["soil_moisture"],
+            reading["water_level"]
+        ))
+
+
+@app.route("/")
+def home():
+    # Serve the dashboard through Flask (not through VS Code Live Server).
+    return send_from_directory(str(BASE_DIR), "index.html")
+
+
+@app.route("/api/readings")
+def readings():
+    """Frontend calls this route every five seconds for the latest values."""
+    reading = get_sensor_reading()
+    save_reading(reading)
+    return jsonify(reading)
+
+
+@app.route("/api/history")
+def history():
+    """Return the latest 20 saved readings as JSON using Pandas."""
+    with sqlite3.connect(DB_FILE) as connection:
+        frame = pd.read_sql_query("""
+            SELECT timestamp, temperature, humidity, rainfall,
+                   soil_moisture, water_level
+            FROM readings
+            ORDER BY id DESC
+            LIMIT 20
+        """, connection)
+
+    return jsonify(frame.to_dict(orient="records"))
+
+
+@app.route("/api/health")
+def health():
+    """Simple route to check whether the Python server is running."""
+    return jsonify({"status": "connected", "mode": "demo"})
+
+
+if __name__ == "__main__":
+    init_database()
+    print("\\nBareilly IoT Weather Dashboard is running.")
+    print("Open this address in your browser: http://127.0.0.1:5000\\n")
+    app.run(host="127.0.0.1", port=5000, debug=False)
